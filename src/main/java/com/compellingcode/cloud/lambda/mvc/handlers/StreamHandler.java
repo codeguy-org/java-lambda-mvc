@@ -16,9 +16,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
-public class StreamHandler implements RequestStreamHandler{
+public abstract class StreamHandler implements RequestStreamHandler {
     // Initialize the Log4j logger.
     static final Logger logger = LogManager.getLogger(StreamHandler.class);
+    
+    public StreamHandler() {
+    	configure();
+    }
+
+	protected abstract void configure();
     
 	public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
 		
