@@ -1,5 +1,6 @@
 package com.compellingcode.cloud.lambda.mvc.services;
 
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
@@ -7,7 +8,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
+import com.compellingcode.cloud.lambda.mvc.view.HtmlLambdaResponse;
+import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
 public class LambdaRequestService {
 	
@@ -17,6 +21,8 @@ public class LambdaRequestService {
 		LambdaRequest request = new LambdaRequest();
 		
 		request.setHeaders(getHeaders(data));
+		
+		// todo: process body
 		
 		return request;
 	}
@@ -51,9 +57,13 @@ public class LambdaRequestService {
 			if(h != null) {
 				headers = h;
 			}
-	}
+		}
 		
 		return headers;
 	}
 	
+	
+	public LambdaResponse processRequest(LambdaRequest lambdaRequest, OutputStream outputStream, Context context) {
+		return new HtmlLambdaResponse();
+	}
 }

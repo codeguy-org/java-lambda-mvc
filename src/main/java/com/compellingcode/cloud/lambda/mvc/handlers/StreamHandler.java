@@ -1,19 +1,17 @@
 package com.compellingcode.cloud.lambda.mvc.handlers;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.StringWriter;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.services.LambdaRequestService;
+import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,20 +48,20 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		LambdaRequest request = lambdaRequestService.getLambdaRequest(data);
 		data = null;
 		
-		JSONObject output = new JSONObject();
-		JSONObject headers = new JSONObject();
-		output.put("headers", headers);
+		LambdaResponse response = lambdaRequestService.processRequest(request, outputStream, context);
 
-		output.put("body", "done");
+		JSONObject output = new JSONObject();
+		JSONObject headers = response.getHeaders();
 		
-		headers.put("Content-Type", "text/html");
+		headers.put("Content-Type", response.getMimeType().getType());
+		headers.put("Content-Length", response.getSize());
+		
+		output.put("headers", headers);
+		output.put("body", response.getBody());
+		output.put("statusCode", response.getStatusCode());
 		
 		outputStream.write(output.toString().getBytes());
-		
 	}
-	
-	private void processRequest(LambdaRequest lambdaRequest, OutputStream outputStream, Context context) {
-		
-	}
+
     
 }
