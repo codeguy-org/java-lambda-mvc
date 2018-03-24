@@ -63,7 +63,6 @@ public class EndpointTreeNode {
 	}
 	
 	public RequestProcessor search(String path) throws NoMatchingEndpointException, EndpointVariableMismatchException {
-		System.out.println(path);
 		List<String> parts = splitifyPath(path);
 		return search(parts, new ArrayList<Object>());
 	}
@@ -84,28 +83,54 @@ public class EndpointTreeNode {
 			
 			return new RequestProcessor(callback, vars);
 		} else {
-			String part = parts.remove(0);
-			
-			if(staticNodes.containsKey(part)) {
+			try {
+				return getStaticProcessor(parts, values);
+			} catch(NoMatchingEndpointException ex) {
+				return getDynamicProcessor(parts, values);
+			} catch(EndpointVariableMismatchException mex) {
 				try {
-					return staticNodes.get(part).search(parts, values);
-				} catch(NoMatchingEndpointException ex) { /* not found on this path, try the dynamic path */ }
-				
-				if(dynamicNode != null) {
-					values.add(part);
-					return dynamicNode.search(parts, values);
-				} else {
-					throw new NoMatchingEndpointException();
-				}
-			} else {
-				if(dynamicNode != null) {
-					System.out.println(part);
-					values.add(part);
-					return dynamicNode.search(parts, values);
-				} else {
-					throw new NoMatchingEndpointException();
+					return getDynamicProcessor(parts, values);
+				} catch(NoMatchingEndpointException ex) {
+					throw mex;
 				}
 			}
+		}
+	}
+	
+	private RequestProcessor getDynamicProcessor(List<String> parts, List<Object> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
+		if(dynamicNode != null) {
+			String part = parts.remove(0);
+			values.add(part);
+			try {
+				return dynamicNode.search(parts, values);
+			} catch(EndpointVariableMismatchException ex) {
+				values.remove(values.size() - 1);
+				parts.add(0, part);
+				throw ex;
+			} catch(NoMatchingEndpointException ex) {
+				values.remove(values.size() - 1);
+				parts.add(0, part);
+				throw ex;
+			}
+		} else {
+			throw new NoMatchingEndpointException();
+		}
+	}
+	
+	private RequestProcessor getStaticProcessor(List<String> parts, List<Object> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
+		if(staticNodes.containsKey(parts.get(0))) {
+			String part = parts.remove(0);
+			try {
+				return staticNodes.get(part).search(parts, values);
+			} catch(NoMatchingEndpointException ex) {
+				parts.add(0, part);
+				throw ex;
+			} catch(EndpointVariableMismatchException ex) {
+				parts.add(0, part);
+				throw ex;
+			}
+		} else {
+			throw new NoMatchingEndpointException();
 		}
 	}
 	
