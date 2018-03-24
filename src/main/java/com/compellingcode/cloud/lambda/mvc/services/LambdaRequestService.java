@@ -63,7 +63,7 @@ public class LambdaRequestService {
 	}
 	
 	
-	public LambdaResponse processRequest(LambdaRequest lambdaRequest, OutputStream outputStream, Context context) {
+	public LambdaResponse processRequest(LambdaRequest lambdaRequest, Context context) {
 		return new HtmlLambdaResponse();
 	}
 }

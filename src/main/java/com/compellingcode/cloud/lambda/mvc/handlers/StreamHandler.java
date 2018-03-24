@@ -30,7 +30,12 @@ public abstract class StreamHandler implements RequestStreamHandler {
 	protected abstract void configure();
     
 	public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-		
+		JSONObject data = acceptStreamConnection(inputStream);
+		LambdaResponse response = processRequest(data, context);
+		renderStream(outputStream, response);
+	}
+
+    protected JSONObject acceptStreamConnection(InputStream inputStream) throws IOException {
 		StringBuilder out = new StringBuilder();
 		BufferedReader br = new BufferedReader(new BoundedReader(new InputStreamReader(inputStream, "UTF-8"), 10 * 1024 * 1024));
 		
@@ -42,14 +47,10 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		
 		br.close();
 				
-		JSONObject data = new JSONObject(out.toString());
-		logger.debug(data.toString());
-		
-		LambdaRequest request = lambdaRequestService.getLambdaRequest(data);
-		data = null;
-		
-		LambdaResponse response = lambdaRequestService.processRequest(request, outputStream, context);
-
+		return new JSONObject(out.toString());
+    }
+    
+    protected void renderStream(OutputStream outputStream, LambdaResponse response) throws IOException {
 		JSONObject output = new JSONObject();
 		JSONObject headers = response.getHeaders();
 		
@@ -61,7 +62,14 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		output.put("statusCode", response.getStatusCode());
 		
 		outputStream.write(output.toString().getBytes());
-	}
-
+    }
+    
+    protected LambdaResponse processRequest(JSONObject data, Context context) {
+		LambdaRequest request = lambdaRequestService.getLambdaRequest(data);
+		
+		LambdaResponse response = lambdaRequestService.processRequest(request, context);
+		
+		return response;
+    }
     
 }
