@@ -50,11 +50,8 @@ public class LambdaRequestService {
 			isBase64Encoded = data.getBoolean("isBase64Encoded");
 		}
 		
-		if(data.has("body")) {
-			String b = data.getString("body");
-			if(b != null) {
-				stringBody = b;
-			}
+		if(data.has("body") && !data.isNull("body")) {
+			stringBody = data.getString("body");
 		}
 		
 		if(stringBody.length() > 0) {
@@ -74,10 +71,7 @@ public class LambdaRequestService {
 		JSONObject obj = new JSONObject();
 		
 		if(data.has(key) && !data.isNull(key)) {
-			JSONObject o = data.getJSONObject(key);
-			if(o != null) {
-				obj = o;
-			}
+			obj = data.getJSONObject(key);
 		}
 		
 		return obj;
