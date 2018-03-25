@@ -1,6 +1,7 @@
 package com.compellingcode.cloud.lambda.mvc.services;
 
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
@@ -10,6 +11,10 @@ import org.json.JSONObject;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
+import com.compellingcode.cloud.lambda.mvc.endpoint.Endpoint;
+import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointCallback;
+import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
+import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointConflictException;
 import com.compellingcode.cloud.lambda.mvc.view.HtmlLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
@@ -19,6 +24,8 @@ public class LambdaRequestService {
 	
 	public LambdaRequest getLambdaRequest(JSONObject data) {
 		LambdaRequest request = new LambdaRequest();
+		
+		logger.debug(data);
 		
 		request.setHeaders(getHeaders(data));
 		

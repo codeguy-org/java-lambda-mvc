@@ -5,9 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
+import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
+import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.services.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.services.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -22,12 +26,30 @@ public abstract class StreamHandler implements RequestStreamHandler {
     static final Logger logger = LogManager.getLogger(StreamHandler.class);
     
     private LambdaRequestService lambdaRequestService = new LambdaRequestService();
+    private LambdaControllerService lambdaControllerService = new LambdaControllerService();
+    private EndpointTreeNode rootNode = new EndpointTreeNode();
     
     public StreamHandler() {
-    	configure();
+    	try {
+    		configure();
+    	} catch(Exception ex) {
+    		logger.fatal(ex);
+    	}
     }
 
-	protected abstract void configure();
+	protected abstract void configure() throws EndpointConflictException;
+	
+	public void addController(Object controller) throws EndpointConflictException {
+		lambdaControllerService.addController(rootNode, controller);
+	}
+	
+	public void addMethod(String path, Object controller, String method) throws EndpointConflictException {
+		lambdaControllerService.addMethod(rootNode, path, controller, method);
+	}
+	
+	public void addMethod(String path, Object controller, Method method) throws EndpointConflictException {
+		lambdaControllerService.addMethod(rootNode, path, controller, method);
+	}
     
 	public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
 		JSONObject data = acceptStreamConnection(inputStream);
