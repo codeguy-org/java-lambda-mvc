@@ -5,12 +5,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointVariableMismatchException;
+import com.compellingcode.cloud.lambda.mvc.exceptions.NoMatchingEndpointException;
 import com.compellingcode.cloud.lambda.mvc.services.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.services.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
@@ -33,11 +38,26 @@ public abstract class StreamHandler implements RequestStreamHandler {
     	try {
     		configure();
     	} catch(Exception ex) {
-    		logger.fatal(ex);
+    		try {
+				logger.fatal(getStackTrace(ex));
+			} catch (IOException e) {
+				logger.fatal(ex);
+			}
     	}
     }
 
 	protected abstract void configure() throws EndpointConflictException;
+	
+	public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
+		try {
+			JSONObject data = acceptStreamConnection(inputStream);
+			LambdaResponse response = processRequest(data, context);
+			renderStream(outputStream, response);
+		} catch(Exception ex) {
+			// todo: catch path not found exceptions, return different error types
+			logger.fatal(getStackTrace(ex));
+		}
+	}
 	
 	public void addController(Object controller) throws EndpointConflictException {
 		lambdaControllerService.addController(rootNode, controller);
@@ -51,12 +71,6 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		lambdaControllerService.addMethod(rootNode, path, controller, method);
 	}
     
-	public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-		JSONObject data = acceptStreamConnection(inputStream);
-		LambdaResponse response = processRequest(data, context);
-		renderStream(outputStream, response);
-	}
-
     protected JSONObject acceptStreamConnection(InputStream inputStream) throws IOException {
 		StringBuilder out = new StringBuilder();
 		BufferedReader br = new BufferedReader(new BoundedReader(new InputStreamReader(inputStream, "UTF-8"), 10 * 1024 * 1024));
@@ -86,12 +100,24 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		outputStream.write(output.toString().getBytes());
     }
     
-    protected LambdaResponse processRequest(JSONObject data, Context context) {
+    protected LambdaResponse processRequest(JSONObject data, Context context) throws NoMatchingEndpointException, EndpointVariableMismatchException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		LambdaRequest request = lambdaRequestService.getLambdaRequest(data);
 		
-		LambdaResponse response = lambdaRequestService.processRequest(request, context);
+		LambdaResponse response = lambdaRequestService.processRequest(rootNode, request, context);
 		
 		return response;
     }
-    
+
+    private String getStackTrace(Throwable t) throws IOException {
+    	StringWriter sw = new StringWriter();
+    	PrintWriter pw = new PrintWriter(sw);
+    	t.printStackTrace(pw);
+    	
+    	String output = sw.toString();
+    	
+    	pw.close();
+    	sw.close();
+    	
+    	return output;
+    }
 }

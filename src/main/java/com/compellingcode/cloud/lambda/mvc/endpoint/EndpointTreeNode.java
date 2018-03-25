@@ -64,10 +64,10 @@ public class EndpointTreeNode {
 	
 	public RequestProcessor search(String path) throws NoMatchingEndpointException, EndpointVariableMismatchException {
 		List<String> parts = splitifyPath(path);
-		return search(parts, new ArrayList<Object>());
+		return search(parts, new ArrayList<String>());
 	}
 	
-	public RequestProcessor search(List<String> parts, List<Object> values) throws NoMatchingEndpointException, EndpointVariableMismatchException {
+	public RequestProcessor search(List<String> parts, List<String> values) throws NoMatchingEndpointException, EndpointVariableMismatchException {
 		if(parts.size() == 0) {
 			if(callback == null)
 				throw new NoMatchingEndpointException();
@@ -75,7 +75,7 @@ public class EndpointTreeNode {
 			if(variables.size() != values.size())
 				throw new EndpointVariableMismatchException();
 			
-			Map<String, Object> vars = new HashMap<String, Object>();
+			Map<String, String> vars = new HashMap<String, String>();
 			
 			for(int i = 0; i < variables.size(); i++) {
 				vars.put(variables.get(i), values.get(i));
@@ -97,7 +97,7 @@ public class EndpointTreeNode {
 		}
 	}
 	
-	private RequestProcessor getDynamicProcessor(List<String> parts, List<Object> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
+	private RequestProcessor getDynamicProcessor(List<String> parts, List<String> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
 		if(dynamicNode != null) {
 			String part = parts.remove(0);
 			values.add(part);
@@ -117,7 +117,7 @@ public class EndpointTreeNode {
 		}
 	}
 	
-	private RequestProcessor getStaticProcessor(List<String> parts, List<Object> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
+	private RequestProcessor getStaticProcessor(List<String> parts, List<String> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
 		if(staticNodes.containsKey(parts.get(0))) {
 			String part = parts.remove(0);
 			try {

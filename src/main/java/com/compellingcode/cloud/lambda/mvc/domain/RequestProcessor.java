@@ -7,9 +7,9 @@ import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointCallback;
 public class RequestProcessor {
 	
 	public EndpointCallback callback = null;
-	public Map<String, Object> variables = null;
+	public Map<String, String> variables = null;
 
-	public RequestProcessor(EndpointCallback callback, Map<String, Object> variables) {
+	public RequestProcessor(EndpointCallback callback, Map<String, String> variables) {
 		this.callback = callback;
 		this.variables = variables;
 	}
@@ -18,7 +18,7 @@ public class RequestProcessor {
 		return callback;
 	}
 
-	public Map<String, Object> getVariables() {
+	public Map<String, String> getVariables() {
 		return variables;
 	}
 
