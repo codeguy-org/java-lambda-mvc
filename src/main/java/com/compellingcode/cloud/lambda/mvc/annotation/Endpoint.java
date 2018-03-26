@@ -1,4 +1,4 @@
-package com.compellingcode.cloud.lambda.mvc.endpoint;
+package com.compellingcode.cloud.lambda.mvc.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

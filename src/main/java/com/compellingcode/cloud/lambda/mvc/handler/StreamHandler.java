@@ -1,4 +1,4 @@
-package com.compellingcode.cloud.lambda.mvc.handlers;
+package com.compellingcode.cloud.lambda.mvc.handler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,12 +12,11 @@ import java.lang.reflect.Method;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
-import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
-import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointConflictException;
-import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointVariableMismatchException;
-import com.compellingcode.cloud.lambda.mvc.exceptions.NoMatchingEndpointException;
-import com.compellingcode.cloud.lambda.mvc.services.LambdaControllerService;
-import com.compellingcode.cloud.lambda.mvc.services.LambdaRequestService;
+import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
+import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.service.LambdaControllerService;
+import com.compellingcode.cloud.lambda.mvc.service.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 

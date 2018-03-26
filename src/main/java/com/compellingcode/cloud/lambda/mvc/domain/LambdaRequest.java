@@ -1,8 +1,11 @@
 package com.compellingcode.cloud.lambda.mvc.domain;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 
 import org.json.JSONObject;
+
+import com.compellingcode.cloud.lambda.mvc.enums.ContentType;
 
 public class LambdaRequest implements Serializable {
 	
@@ -14,6 +17,8 @@ public class LambdaRequest implements Serializable {
 	private String path;
 	private String method;
 	private String ip;
+	private byte[] body;
+	private ContentType bodyType;
 	private JSONObject headers;
 	private JSONObject requestContext;
 	private JSONObject identity;
@@ -109,6 +114,34 @@ public class LambdaRequest implements Serializable {
 
 	public void setIdentity(JSONObject identity) {
 		this.identity = identity;
+	}
+
+	public byte[] getBody() {
+		return body;
+	}
+
+	public void setBody(byte[] body) {
+		this.body = body;
+	}
+	
+	public String getBodyString() throws UnsupportedEncodingException {
+		return new String(this.body, "UTF-8");
+	}
+	
+	public void setBodyString(String body) throws UnsupportedEncodingException {
+		if(body == null) {
+			this.body = null;
+		} else {
+			this.body = body.getBytes("UTF-8");
+		}
+	}
+
+	public ContentType getBodyType() {
+		return bodyType;
+	}
+
+	public void setBodyType(ContentType bodyType) {
+		this.bodyType = bodyType;
 	}
 	
 }

@@ -1,4 +1,4 @@
-package com.compellingcode.cloud.lambda.mvc.services;
+package com.compellingcode.cloud.lambda.mvc.service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Base64;
@@ -11,9 +11,11 @@ import org.json.JSONObject;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
-import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
-import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointVariableMismatchException;
-import com.compellingcode.cloud.lambda.mvc.exceptions.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.enums.ContentType;
+import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
+import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.handler.EndpointTreeNode;
+import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
 public class LambdaRequestService {
@@ -35,9 +37,35 @@ public class LambdaRequestService {
 		request.setIp(request.getIdentity().getString("sourceIp"));
 		
 		byte[] body = getBody(data);
-		//todo: process body
+		String ct = getContentType(request.getHeaders());
+		ContentType contentType = ContentType.resolveType(ct);
+		RequestDecoderFactory rdf = new RequestDecoderFactory();
+		RequestDecoder rd = rdf.getRequestDecoder(contentType);
+		rd.decode(body , request);
 		
 		return request;
+	}
+	
+	private String getContentType(JSONObject data) {
+		String contentType = null;
+		
+		if(data.has("content-type") && !data.isNull("content-type")) {
+			contentType = data.getString("content-type").toLowerCase();
+		}
+		
+		if(data.has("Content-Type") && !data.isNull("Content-Type")) {
+			contentType = data.getString("content-type").toLowerCase();
+		}
+		
+		if(data.has("Content-type") && !data.isNull("Content-type")) {
+			contentType = data.getString("content-type").toLowerCase();
+		}
+		
+		if(data.has("CONTENT-TYPE") && !data.isNull("CONTENT-TYPE")) {
+			contentType = data.getString("content-type").toLowerCase();
+		}
+		
+		return contentType;
 	}
 	
 	private byte[] getBody(JSONObject data) {

@@ -2,8 +2,6 @@ package com.compellingcode.cloud.lambda.mvc.domain;
 
 import java.util.Map;
 
-import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointCallback;
-
 public class RequestProcessor {
 	
 	public EndpointCallback callback = null;

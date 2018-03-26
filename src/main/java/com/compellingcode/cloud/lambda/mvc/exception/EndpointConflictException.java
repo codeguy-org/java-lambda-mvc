@@ -1,4 +1,4 @@
-package com.compellingcode.cloud.lambda.mvc.exceptions;
+package com.compellingcode.cloud.lambda.mvc.exception;
 
 public class EndpointConflictException extends Exception {
 

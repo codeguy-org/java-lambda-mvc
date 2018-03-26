@@ -1,11 +1,11 @@
-package com.compellingcode.cloud.lambda.mvc.services;
+package com.compellingcode.cloud.lambda.mvc.service;
 
 import java.lang.reflect.Method;
 
-import com.compellingcode.cloud.lambda.mvc.endpoint.Endpoint;
-import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointCallback;
-import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
-import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.annotation.Endpoint;
+import com.compellingcode.cloud.lambda.mvc.domain.EndpointCallback;
+import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.handler.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
 public class LambdaControllerService {

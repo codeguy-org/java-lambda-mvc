@@ -1,4 +1,4 @@
-package com.compellingcode.cloud.lambda.mvc.endpoint;
+package com.compellingcode.cloud.lambda.mvc.domain;
 
 import java.lang.reflect.Method;
 

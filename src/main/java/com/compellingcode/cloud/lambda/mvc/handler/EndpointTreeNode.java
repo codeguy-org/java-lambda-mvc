@@ -1,4 +1,4 @@
-package com.compellingcode.cloud.lambda.mvc.endpoint;
+package com.compellingcode.cloud.lambda.mvc.handler;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.compellingcode.cloud.lambda.mvc.domain.EndpointCallback;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
-import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointConflictException;
-import com.compellingcode.cloud.lambda.mvc.exceptions.EndpointVariableMismatchException;
-import com.compellingcode.cloud.lambda.mvc.exceptions.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
+import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
 
 public class EndpointTreeNode {
 	
