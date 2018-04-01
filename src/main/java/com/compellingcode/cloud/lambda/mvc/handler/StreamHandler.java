@@ -91,13 +91,14 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		headers.put("Content-Type", response.getMimeType().getType());
 		headers.put("Content-Length", response.getSize());
 		
-		output.put("headers", headers);
 		try {
 			output.put("body", response.getBody());
 		} catch(LambdaResponseException ex) {
 			// todo: add error handler
 		}
+		output.put("headers", headers);
 		output.put("statusCode", response.getStatusCode());
+		output.put("isBase64Encoded", response.isBase64Encoded());
 		
 		outputStream.write(output.toString().getBytes());
     }
