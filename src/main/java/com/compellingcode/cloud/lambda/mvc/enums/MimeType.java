@@ -1,7 +1,8 @@
 package com.compellingcode.cloud.lambda.mvc.enums;
 
 public enum MimeType {
-	HTML("text/html")
+	HTML("text/html"),
+	JSON("application/json")
 	;
 	
 	private String type;

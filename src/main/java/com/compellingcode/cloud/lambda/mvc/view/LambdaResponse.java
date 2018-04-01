@@ -6,6 +6,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.compellingcode.cloud.lambda.mvc.enums.MimeType;
+import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
 
 public abstract class LambdaResponse {
 	
@@ -16,7 +17,7 @@ public abstract class LambdaResponse {
 	protected int size = 0;
 	protected MimeType mimeType = MimeType.HTML;
 	
-	public abstract String getBody();
+	public abstract String getBody() throws LambdaResponseException;
 
 	public void setHeader(String key, String value) {
 		headers.put(key, value);
@@ -71,6 +72,10 @@ public abstract class LambdaResponse {
 
 	public void setVariable(String key, Map<?, ?> value) {
 		variables.put(key, value);
+	}
+	
+	protected JSONObject getVariables() {
+		return variables;
 	}
 
 	public String getStatusCode() {

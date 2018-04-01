@@ -7,15 +7,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
-import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
-import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
@@ -94,7 +92,11 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		headers.put("Content-Length", response.getSize());
 		
 		output.put("headers", headers);
-		output.put("body", response.getBody());
+		try {
+			output.put("body", response.getBody());
+		} catch(LambdaResponseException ex) {
+			// todo: add error handler
+		}
 		output.put("statusCode", response.getStatusCode());
 		
 		outputStream.write(output.toString().getBytes());
