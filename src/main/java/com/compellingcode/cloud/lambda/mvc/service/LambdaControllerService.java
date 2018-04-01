@@ -3,9 +3,9 @@ package com.compellingcode.cloud.lambda.mvc.service;
 import java.lang.reflect.Method;
 
 import com.compellingcode.cloud.lambda.mvc.annotation.Endpoint;
-import com.compellingcode.cloud.lambda.mvc.domain.EndpointCallback;
+import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointCallback;
+import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
-import com.compellingcode.cloud.lambda.mvc.handler.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
 public class LambdaControllerService {
@@ -15,7 +15,7 @@ public class LambdaControllerService {
 	}
 
 	
-	public void addController(EndpointTreeNode root, Object controller) throws EndpointConflictException {
+	public void addController(EndpointTreeNode root, Object controller) throws Exception {
 		Method[] mm =  controller.getClass().getDeclaredMethods();
 		for(Method m : mm) {
 			Endpoint e = m.getAnnotation(Endpoint.class);
@@ -27,7 +27,7 @@ public class LambdaControllerService {
 		}
 	}
 	
-	public void addMethod(EndpointTreeNode root, String path, Object controller, String methodName) throws EndpointConflictException {
+	public void addMethod(EndpointTreeNode root, String path, Object controller, String methodName) throws Exception {
 		Method[] mm = controller.getClass().getDeclaredMethods();
 		for(Method m : mm) {
 			if(m.getName().equals(methodName) && m.getReturnType().equals(LambdaResponse.class)) {
@@ -38,7 +38,7 @@ public class LambdaControllerService {
 		}
 	}
 	
-	public void addMethod(EndpointTreeNode root, String path, Object controller, Method method) throws EndpointConflictException {
+	public void addMethod(EndpointTreeNode root, String path, Object controller, Method method) throws Exception {
 		root.parse(path, new EndpointCallback(controller, method));
 	}
 	

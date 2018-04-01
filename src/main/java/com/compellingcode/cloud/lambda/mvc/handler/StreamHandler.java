@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
+import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
 import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
@@ -58,15 +59,15 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		}
 	}
 	
-	public void addController(Object controller) throws EndpointConflictException {
+	public void addController(Object controller) throws Exception {
 		lambdaControllerService.addController(rootNode, controller);
 	}
 	
-	public void addMethod(String path, Object controller, String method) throws EndpointConflictException {
+	public void addMethod(String path, Object controller, String method) throws Exception {
 		lambdaControllerService.addMethod(rootNode, path, controller, method);
 	}
 	
-	public void addMethod(String path, Object controller, Method method) throws EndpointConflictException {
+	public void addMethod(String path, Object controller, Method method) throws Exception {
 		lambdaControllerService.addMethod(rootNode, path, controller, method);
 	}
     
@@ -99,7 +100,7 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		outputStream.write(output.toString().getBytes());
     }
     
-    protected LambdaResponse processRequest(JSONObject data, Context context) throws NoMatchingEndpointException, EndpointVariableMismatchException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    protected LambdaResponse processRequest(JSONObject data, Context context) throws Exception {
 		LambdaRequest request = lambdaRequestService.getLambdaRequest(data);
 		
 		LambdaResponse response = lambdaRequestService.processRequest(rootNode, request, context);

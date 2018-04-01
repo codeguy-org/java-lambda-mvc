@@ -11,10 +11,10 @@ import org.json.JSONObject;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
+import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.enums.ContentType;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
 import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
-import com.compellingcode.cloud.lambda.mvc.handler.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
@@ -42,7 +42,7 @@ public class LambdaRequestService {
 		RequestDecoderFactory rdf = new RequestDecoderFactory();
 		RequestDecoder rd = rdf.getRequestDecoder(contentType);
 		rd.decode(body , request);
-		
+
 		return request;
 	}
 	
@@ -106,7 +106,7 @@ public class LambdaRequestService {
 	}
 	
 	
-	public LambdaResponse processRequest(EndpointTreeNode rootNode, LambdaRequest request, Context context) throws NoMatchingEndpointException, EndpointVariableMismatchException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public LambdaResponse processRequest(EndpointTreeNode rootNode, LambdaRequest request, Context context) throws Exception {
 		String proxy = "/";
 		
 		if(request.getPathParameters().has("proxy")) {
@@ -125,6 +125,6 @@ public class LambdaRequestService {
 			pathParameters.put(entry.getKey(), entry.getValue());
 		}
 		
-		return (LambdaResponse)rp.getCallback().getMethod().invoke(rp.getCallback().getObject());
+		return (LambdaResponse)rp.getCallback().call(context,  request);
 	}
 }

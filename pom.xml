@@ -22,6 +22,12 @@
       <scope>test</scope>
     </dependency>
     
+    <dependency>
+		<groupId>com.compellingcode.utils</groupId>
+		<artifactId>type-converter</artifactId>
+		<version>0.0.1</version>
+    </dependency>
+    
 	<!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
 	<dependency>
 	    <groupId>org.mockito</groupId>

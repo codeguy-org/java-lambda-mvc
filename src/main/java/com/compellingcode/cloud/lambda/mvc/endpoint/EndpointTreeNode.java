@@ -1,4 +1,4 @@
-package com.compellingcode.cloud.lambda.mvc.handler;
+package com.compellingcode.cloud.lambda.mvc.endpoint;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.compellingcode.cloud.lambda.mvc.domain.EndpointCallback;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
