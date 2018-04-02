@@ -2,7 +2,7 @@ package com.compellingcode.cloud.lambda.mvc.service;
 
 import java.lang.reflect.Method;
 
-import com.compellingcode.cloud.lambda.mvc.annotation.Endpoint;
+import com.compellingcode.cloud.lambda.mvc.endpoint.Endpoint;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointCallback;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;

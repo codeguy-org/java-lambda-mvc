@@ -1,9 +1,7 @@
-package com.compellingcode.cloud.lambda.mvc.annotation;
+package com.compellingcode.cloud.lambda.mvc.endpoint;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
-import com.compellingcode.cloud.lambda.mvc.endpoint.ParameterType;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EndpointParameter {

@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.compellingcode.cloud.lambda.mvc.annotation.EndpointParameter;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
 public class EndpointCallbackTest {

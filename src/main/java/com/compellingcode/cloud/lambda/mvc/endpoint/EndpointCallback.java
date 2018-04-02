@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.compellingcode.cloud.lambda.mvc.annotation.EndpointParameter;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.compellingcode.utils.typeconverter.Converter;
