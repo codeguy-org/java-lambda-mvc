@@ -16,29 +16,48 @@ import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException
 public class EndpointTreeNode {
 	
 	private String path = null;
-	private EndpointCallback callback = null;
+	
+	private Map<Integer, EndpointCallback> callbacks;
 	
 	private EndpointTreeNode dynamicNode = null;
 	private Map<String, EndpointTreeNode> staticNodes = new HashMap<String, EndpointTreeNode>();
 	private List<String> variables = null;
 	
 	public EndpointTreeNode() {
+		callbacks = new HashMap<Integer, EndpointCallback>();
+		callbacks.put(RequestMethod.GET, null);
+		callbacks.put(RequestMethod.POST, null);
+		callbacks.put(RequestMethod.PUT, null);
+		callbacks.put(RequestMethod.DELETE, null);
 	}
 	
-	public void parse(String path, EndpointCallback callback) throws EndpointConflictException {
+	public void parse(String path, EndpointCallback callback, int method) throws EndpointConflictException {
 		List<String> parts = splitifyPath(path);
-		parse("/", parts, callback, new ArrayList<String>());
+		parse("/", parts, callback, new ArrayList<String>(), method);
 	}
 	
 
-	protected void parse(String path, List<String> parts, EndpointCallback callback, List<String> variables) throws EndpointConflictException {
+	protected void parse(String path, List<String> parts, EndpointCallback callback, List<String> variables, int method) throws EndpointConflictException {
 		if(parts.size() == 0) {
-			if(this.callback != null)
-				throw new EndpointConflictException("Endpoint (" + path + ") conflicts with Endpoint (" + this.path + ")");
+			if(method == 0) {
+				for(EndpointCallback ec : this.callbacks.values()) {
+					if(ec != null)
+						throw new EndpointConflictException("Endpoint (" + path + ") conflicts with Endpoint (" + this.path + ")");
+				}
+			} else {
+				if(this.callbacks.get(method) != null)
+					throw new EndpointConflictException("Endpoint (" + path + ") conflicts with Endpoint (" + this.path + ")");
+			}
 			
 			this.path = path;
-			this.callback = callback;
 			this.variables = variables;
+			
+			if(method == 0) {
+				for(int m : this.callbacks.keySet())
+					this.callbacks.put(m, callback);
+			} else {
+				this.callbacks.put(method, callback);
+			}
 		} else {
 			String part = parts.remove(0);
 			String variable = variableName(part);
@@ -52,24 +71,24 @@ public class EndpointTreeNode {
 				if(dynamicNode == null)
 					dynamicNode = new EndpointTreeNode();
 				
-				dynamicNode.parse(path + "/" + part, parts, callback, variables);
+				dynamicNode.parse(path + "/" + part, parts, callback, variables, method);
 			} else {
 				if(!staticNodes.containsKey(part))
 					staticNodes.put(part, new EndpointTreeNode());
 				
-				staticNodes.get(part).parse(path + "/" + part,  parts, callback, variables);
+				staticNodes.get(part).parse(path + "/" + part,  parts, callback, variables, method);
 			}
 		}
 	}
 	
-	public RequestProcessor search(String path) throws NoMatchingEndpointException, EndpointVariableMismatchException {
+	public RequestProcessor search(String path, int method) throws NoMatchingEndpointException, EndpointVariableMismatchException {
 		List<String> parts = splitifyPath(path);
-		return search(parts, new ArrayList<String>());
+		return search(parts, new ArrayList<String>(), method);
 	}
 	
-	public RequestProcessor search(List<String> parts, List<String> values) throws NoMatchingEndpointException, EndpointVariableMismatchException {
+	public RequestProcessor search(List<String> parts, List<String> values, int method) throws NoMatchingEndpointException, EndpointVariableMismatchException {
 		if(parts.size() == 0) {
-			if(callback == null)
+			if(callbacks.get(method) == null)
 				throw new NoMatchingEndpointException();
 			
 			if(variables.size() != values.size())
@@ -81,15 +100,15 @@ public class EndpointTreeNode {
 				vars.put(variables.get(i), values.get(i));
 			}
 			
-			return new RequestProcessor(callback, vars);
+			return new RequestProcessor(callbacks.get(method), vars);
 		} else {
 			try {
-				return getStaticProcessor(parts, values);
+				return getStaticProcessor(parts, values, method);
 			} catch(NoMatchingEndpointException ex) {
-				return getDynamicProcessor(parts, values);
+				return getDynamicProcessor(parts, values, method);
 			} catch(EndpointVariableMismatchException mex) {
 				try {
-					return getDynamicProcessor(parts, values);
+					return getDynamicProcessor(parts, values, method);
 				} catch(NoMatchingEndpointException ex) {
 					throw mex;
 				}
@@ -97,12 +116,12 @@ public class EndpointTreeNode {
 		}
 	}
 	
-	private RequestProcessor getDynamicProcessor(List<String> parts, List<String> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
+	private RequestProcessor getDynamicProcessor(List<String> parts, List<String> values, int method) throws EndpointVariableMismatchException, NoMatchingEndpointException {
 		if(dynamicNode != null) {
 			String part = parts.remove(0);
 			values.add(part);
 			try {
-				return dynamicNode.search(parts, values);
+				return dynamicNode.search(parts, values, method);
 			} catch(EndpointVariableMismatchException ex) {
 				values.remove(values.size() - 1);
 				parts.add(0, part);
@@ -117,11 +136,11 @@ public class EndpointTreeNode {
 		}
 	}
 	
-	private RequestProcessor getStaticProcessor(List<String> parts, List<String> values) throws EndpointVariableMismatchException, NoMatchingEndpointException {
+	private RequestProcessor getStaticProcessor(List<String> parts, List<String> values, int method) throws EndpointVariableMismatchException, NoMatchingEndpointException {
 		if(staticNodes.containsKey(parts.get(0))) {
 			String part = parts.remove(0);
 			try {
-				return staticNodes.get(part).search(parts, values);
+				return staticNodes.get(part).search(parts, values, method);
 			} catch(NoMatchingEndpointException ex) {
 				parts.add(0, part);
 				throw ex;
@@ -206,8 +225,8 @@ public class EndpointTreeNode {
 		return path;
 	}
 
-	public EndpointCallback getCallback() {
-		return callback;
+	public EndpointCallback getCallback(int method) {
+		return callbacks.get(method);
 	}
 
 	public List<String> getVariables() {
@@ -221,28 +240,10 @@ public class EndpointTreeNode {
 		sw.append("EndpoingTreeNode {");
 		sw.append("\"path\": \"");
 		sw.append(path);
-		sw.append("\", \"callback\": ");
+		sw.append("\"");
 		
-		if(callback == null) {
-			sw.append("null");
-		} else {
-			sw.append("{\"object\": ");
-			
-			if(callback.getObject() == null) {
-				sw.append("null");
-			} else {
-				sw.append(callback.getObject().getClass().getSimpleName());
-			}
-			
-			sw.append(", \"method\": ");
-			
-			if(callback.getMethod() == null) {
-				sw.append("null");
-			} else {
-				sw.append(callback.getMethod().getName());
-			}
-			
-			sw.append("}");
+		for(Entry<Integer, EndpointCallback> entry : callbacks.entrySet()) {
+			sw.append(", \"callback" + entry.getKey() + "\": " + callbackToString(entry.getValue()));
 		}
 		
 		sw.append(", \"variables\": ");
@@ -295,4 +296,28 @@ public class EndpointTreeNode {
 		return sw.toString();
 	}
 	
+	private String callbackToString(EndpointCallback callback) {
+		if(callback == null)
+			return "null";
+
+		StringWriter sw = new StringWriter();
+
+		sw.append("{\"object\": ");
+		
+		if(callback.getObject() == null) {
+			sw.append("null");
+		} else {
+			sw.append(callback.getObject().getClass().getSimpleName());
+		}
+		
+		sw.append(", \"method\": ");
+		
+		if(callback.getMethod() == null) {
+			sw.append("null");
+		} else {
+			sw.append(callback.getMethod().getName());
+		}		
+
+		return sw.toString();
+	}
 }

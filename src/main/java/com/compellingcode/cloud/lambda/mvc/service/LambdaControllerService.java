@@ -21,25 +21,25 @@ public class LambdaControllerService {
 			Endpoint e = m.getAnnotation(Endpoint.class);
 			if(e != null) {
 				for(String path : e.value()) {
-					addMethod(root, path, controller, m);
+					addMethod(root, path, controller, m, e.method());
 				}
 			}
 		}
 	}
 	
-	public void addMethod(EndpointTreeNode root, String path, Object controller, String methodName) throws Exception {
+	public void addMethod(EndpointTreeNode root, String path, Object controller, String methodName, int requestMethod) throws Exception {
 		Method[] mm = controller.getClass().getDeclaredMethods();
 		for(Method m : mm) {
 			if(m.getName().equals(methodName) && m.getReturnType().equals(LambdaResponse.class)) {
 				m.setAccessible(true);
-				addMethod(root, path, controller, m);
+				addMethod(root, path, controller, m, requestMethod);
 				break;
 			}
 		}
 	}
 	
-	public void addMethod(EndpointTreeNode root, String path, Object controller, Method method) throws Exception {
-		root.parse(path, new EndpointCallback(controller, method));
+	public void addMethod(EndpointTreeNode root, String path, Object controller, Method method, int requestMethod) throws Exception {
+		root.parse(path, new EndpointCallback(controller, method), requestMethod);
 	}
 	
 }

@@ -12,6 +12,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
+import com.compellingcode.cloud.lambda.mvc.endpoint.RequestMethod;
 import com.compellingcode.cloud.lambda.mvc.enums.ContentType;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
 import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
@@ -118,7 +119,7 @@ public class LambdaRequestService {
 			}
 		}
 		
-		RequestProcessor rp = rootNode.search(proxy);
+		RequestProcessor rp = rootNode.search(proxy, RequestMethod.getMethod(request.getMethod()));
 		
 		JSONObject pathParameters = request.getPathParameters();
 		for(Entry<String, String> entry : rp.getVariables().entrySet()) {

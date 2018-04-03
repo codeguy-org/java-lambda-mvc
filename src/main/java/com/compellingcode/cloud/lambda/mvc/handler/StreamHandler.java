@@ -61,12 +61,12 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		lambdaControllerService.addController(rootNode, controller);
 	}
 	
-	public void addMethod(String path, Object controller, String method) throws Exception {
-		lambdaControllerService.addMethod(rootNode, path, controller, method);
+	public void addMethod(String path, Object controller, String method, int requestMethod) throws Exception {
+		lambdaControllerService.addMethod(rootNode, path, controller, method, requestMethod);
 	}
 	
-	public void addMethod(String path, Object controller, Method method) throws Exception {
-		lambdaControllerService.addMethod(rootNode, path, controller, method);
+	public void addMethod(String path, Object controller, Method method, int requestMethod) throws Exception {
+		lambdaControllerService.addMethod(rootNode, path, controller, method, requestMethod);
 	}
     
     protected JSONObject acceptStreamConnection(InputStream inputStream) throws IOException {
