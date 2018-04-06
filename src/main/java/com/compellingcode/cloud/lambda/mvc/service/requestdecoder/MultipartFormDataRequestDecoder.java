@@ -25,9 +25,9 @@ public class MultipartFormDataRequestDecoder implements RequestDecoder {
 	}
 
 	public void decode(byte[] body, LambdaRequest request) throws RequestDecoderException {
-		logger.debug(new String(Base64.getEncoder().encodeToString(body)));
 		try {
 			List<FormElement> elements = parser.parse(new ByteArrayInputStream(body));
+			
 			for(FormElement element : elements) {
 				if(element.isFile()) {
 					request.getPostParameters().put(element.getName(), element);

@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.compellingcode.cloud.lambda.mvc.enums.MimeType;
 import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
-import com.sun.tools.javac.jvm.ClassFile.Version;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;

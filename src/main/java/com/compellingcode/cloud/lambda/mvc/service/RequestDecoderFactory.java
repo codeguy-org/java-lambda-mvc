@@ -13,6 +13,7 @@ public class RequestDecoderFactory {
 	}
 	
 	public RequestDecoder getRequestDecoder(String contentType) throws InvalidContentTypeException {
+		
 		String[] parts = contentType.split(";");
 		
 		if(parts == null || parts.length == 0)
@@ -24,7 +25,23 @@ public class RequestDecoderFactory {
 			if(parts.length < 2)
 				throw new InvalidContentTypeException("Missing boundary");
 			
-			return new MultipartFormDataRequestDecoder(parts[1].trim());
+			String boundary = null;
+			
+			for(int i = 1; i < parts.length; i++) {
+				String[] subparts = parts[i].split("=", 2);
+				if(subparts.length < 2)
+					continue;
+				
+				if("boundary".equalsIgnoreCase(subparts[0].trim())) {
+					boundary = subparts[1].trim();
+					break;
+				}
+			}
+			
+			if(boundary == null)
+				throw new InvalidContentTypeException("No boundary defined");
+			
+			return new MultipartFormDataRequestDecoder(boundary);
 		} else if(ct == ContentType.UNKNOWN) {
 			return new RawRequestDecoder();
 		} else { 

@@ -32,6 +32,9 @@ public class LambdaRequestService {
 		request.setQueryStringParameters(getJSONObject(data, "queryStringParameters"));
 		request.setStageVariables(getJSONObject(data, "stageVariables"));
 		
+		request.setPostParameters(new JSONObject());
+		request.setRequestParameters(new JSONObject());
+		
 		request.setPath(data.getString("path"));
 		request.setMethod(data.getString("httpMethod"));
 		request.setIp(request.getIdentity().getString("sourceIp"));
