@@ -1,6 +1,7 @@
 package com.compellingcode.cloud.lambda.mvc.view;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -11,7 +12,7 @@ import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
 public abstract class LambdaResponse {
 	
 	private JSONObject headers = new JSONObject();
-	private JSONObject variables = new JSONObject();
+	private Map<String, Object> variables = new HashMap<String, Object>();
 	protected String statusCode = "200";
 	protected boolean base64Encoded = false;
 	protected int size = 0;
@@ -74,7 +75,7 @@ public abstract class LambdaResponse {
 		variables.put(key, value);
 	}
 	
-	protected JSONObject getVariables() {
+	protected Map<String, Object> getVariables() {
 		return variables;
 	}
 

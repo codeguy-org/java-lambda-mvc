@@ -1,7 +1,11 @@
 package com.compellingcode.cloud.lambda.mvc.service.requestdecoder;
 
 import java.io.ByteArrayInputStream;
+import java.util.Base64;
 import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
@@ -11,6 +15,8 @@ import com.compellingcode.utils.parser.form.multipart.exception.InvalidMultipart
 import com.compellingcode.utils.parser.form.multipart.file.FileContainerType;
 
 public class MultipartFormDataRequestDecoder implements RequestDecoder {
+	static final Logger logger = LogManager.getLogger(MultipartFormDataRequestDecoder.class);
+	
 	private MultipartFormParser parser;
 
 	public MultipartFormDataRequestDecoder(String boundary) {
@@ -19,6 +25,7 @@ public class MultipartFormDataRequestDecoder implements RequestDecoder {
 	}
 
 	public void decode(byte[] body, LambdaRequest request) throws RequestDecoderException {
+		logger.debug(new String(Base64.getEncoder().encodeToString(body)));
 		try {
 			List<FormElement> elements = parser.parse(new ByteArrayInputStream(body));
 			for(FormElement element : elements) {

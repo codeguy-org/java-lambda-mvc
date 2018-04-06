@@ -14,6 +14,7 @@ import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.endpoint.RequestMethod;
 import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException;
 import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
+import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RawRequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
@@ -37,8 +38,13 @@ public class LambdaRequestService {
 		
 		byte[] body = getBody(data);
 		String ct = getContentType(request.getHeaders());
-		RequestDecoder rd = new RequestDecoderFactory().getRequestDecoder(ct);
-		rd.decode(body , request);
+		RequestDecoder rd;
+		if(ct != null) {
+			rd = new RequestDecoderFactory().getRequestDecoder(ct);
+		} else {
+			rd = new RawRequestDecoder();
+		}
+		rd.decode(body, request);
 
 		return request;
 	}
