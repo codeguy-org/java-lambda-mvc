@@ -1,6 +1,5 @@
 package com.compellingcode.cloud.lambda.mvc.service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Base64;
 import java.util.Map.Entry;
 
@@ -13,9 +12,8 @@ import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.endpoint.RequestMethod;
-import com.compellingcode.cloud.lambda.mvc.enums.ContentType;
-import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
-import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException;
+import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 
@@ -23,7 +21,7 @@ public class LambdaRequestService {
 	
 	static final Logger logger = LogManager.getLogger(LambdaRequestService.class);
 	
-	public LambdaRequest getLambdaRequest(JSONObject data) {
+	public LambdaRequest getLambdaRequest(JSONObject data) throws InvalidContentTypeException, RequestDecoderException {
 		LambdaRequest request = new LambdaRequest();
 		
 		request.setHeaders(getJSONObject(data, "headers"));
@@ -39,9 +37,7 @@ public class LambdaRequestService {
 		
 		byte[] body = getBody(data);
 		String ct = getContentType(request.getHeaders());
-		ContentType contentType = ContentType.resolveType(ct);
-		RequestDecoderFactory rdf = new RequestDecoderFactory();
-		RequestDecoder rd = rdf.getRequestDecoder(contentType);
+		RequestDecoder rd = new RequestDecoderFactory().getRequestDecoder(ct);
 		rd.decode(body , request);
 
 		return request;
