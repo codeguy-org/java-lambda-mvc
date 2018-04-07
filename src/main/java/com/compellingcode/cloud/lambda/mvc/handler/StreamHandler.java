@@ -56,14 +56,13 @@ public abstract class StreamHandler implements RequestStreamHandler {
 			LambdaResponse response = processRequest(data, context);
 			renderStream(outputStream, response);
 		} catch(InvalidContentTypeException ex) {
-			logger.fatal(getStackTrace(ex));
+			logger.fatal(ex.getMessage());
 			try {
 				renderStream(outputStream, new DefaultErrorResponse(501));
 			} catch (LambdaResponseException e) {
 				logger.fatal(getStackTrace(ex));
 			}
 		} catch(NoMatchingEndpointException ex) {
-			logger.debug(getStackTrace(ex));
 			try {
 				renderStream(outputStream, new DefaultErrorResponse(404));
 			} catch(LambdaResponseException e) {
