@@ -23,7 +23,7 @@ public class HtmlLambdaResponse extends LambdaResponse {
 		if(freemarkerConfiguration == null) {
 			freemarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
 			freemarkerConfiguration.setDefaultEncoding("UTF-8");
-			freemarkerConfiguration.setClassForTemplateLoading(HtmlLambdaResponse.class, "/static/templates");
+			freemarkerConfiguration.setClassForTemplateLoading(HtmlLambdaResponse.class, "/templates");
 		}
 		
 		return freemarkerConfiguration;
