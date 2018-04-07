@@ -17,6 +17,7 @@ import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RawRequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
+import com.compellingcode.utils.parser.form.multipart.domain.FormElement;
 
 public class LambdaRequestService {
 	
@@ -29,11 +30,12 @@ public class LambdaRequestService {
 		request.setRequestContext(getJSONObject(data, "requestContext"));
 		request.setIdentity(getJSONObject(request.getRequestContext(), "identity"));
 		request.setPathParameters(getJSONObject(data, "pathParameters"));
-		request.setQueryStringParameters(getJSONObject(data, "queryStringParameters"));
 		request.setStageVariables(getJSONObject(data, "stageVariables"));
 		
+		request.setQueryStringParameters(getJSONObject(data, "queryStringParameters"));
 		request.setPostParameters(new JSONObject());
-		request.setRequestParameters(new JSONObject());
+		
+		configureRequestParameters(request);
 		
 		request.setPath(data.getString("path"));
 		request.setMethod(data.getString("httpMethod"));
@@ -50,6 +52,25 @@ public class LambdaRequestService {
 		rd.decode(body, request);
 
 		return request;
+	}
+	
+	private void configureRequestParameters(LambdaRequest request) {
+		JSONObject requestParameters = new JSONObject();
+		JSONObject queryStringParameters = request.getQueryStringParameters();
+		JSONObject postParameters = request.getPostParameters();
+		
+		for(String key : queryStringParameters.keySet()) {
+			if(queryStringParameters.isNull(key))
+				requestParameters.put(key, "");
+			
+			requestParameters.put(key, new FormElement(key, queryStringParameters.getString(key)));
+		}
+		
+		for(String key : postParameters.keySet()) {
+			requestParameters.put(key, postParameters.get(key));
+		}
+		
+		request.setRequestParameters(requestParameters);
 	}
 	
 	private String getContentType(JSONObject data) {

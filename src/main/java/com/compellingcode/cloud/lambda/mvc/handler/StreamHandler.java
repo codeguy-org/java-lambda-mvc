@@ -13,9 +13,13 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException;
 import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
+import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaRequestService;
+import com.compellingcode.cloud.lambda.mvc.view.DefaultErrorResponse;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
@@ -51,9 +55,27 @@ public abstract class StreamHandler implements RequestStreamHandler {
 			JSONObject data = acceptStreamConnection(inputStream);
 			LambdaResponse response = processRequest(data, context);
 			renderStream(outputStream, response);
-		} catch(Exception ex) {
-			// todo: catch path not found exceptions, return different error types
+		} catch(InvalidContentTypeException ex) {
 			logger.fatal(getStackTrace(ex));
+			try {
+				renderStream(outputStream, new DefaultErrorResponse(501));
+			} catch (LambdaResponseException e) {
+				logger.fatal(getStackTrace(ex));
+			}
+		} catch(NoMatchingEndpointException ex) {
+			logger.debug(getStackTrace(ex));
+			try {
+				renderStream(outputStream, new DefaultErrorResponse(404));
+			} catch(LambdaResponseException e) {
+				logger.fatal(getStackTrace(e));
+			}
+		} catch(Exception ex) {
+			logger.fatal(getStackTrace(ex));
+			try {
+				renderStream(outputStream, new DefaultErrorResponse(500));
+			} catch (LambdaResponseException e) {
+				logger.fatal(getStackTrace(ex));
+			}
 		}
 	}
 	
@@ -84,7 +106,7 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		return new JSONObject(out.toString());
     }
     
-    protected void renderStream(OutputStream outputStream, LambdaResponse response) throws IOException {
+    protected void renderStream(OutputStream outputStream, LambdaResponse response) throws IOException, LambdaResponseException {
 		JSONObject output = new JSONObject();
 		JSONObject headers = response.getHeaders();
 		
@@ -94,7 +116,7 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		try {
 			output.put("body", response.getBody());
 		} catch(LambdaResponseException ex) {
-			// todo: add error handler
+			throw ex;
 		}
 		output.put("headers", headers);
 		output.put("statusCode", response.getStatusCode());
