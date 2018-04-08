@@ -12,7 +12,10 @@ import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
 import com.compellingcode.cloud.lambda.mvc.endpoint.RequestMethod;
+import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
 import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException;
+import com.compellingcode.cloud.lambda.mvc.exception.InvalidEndpointPathException;
+import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
 import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RawRequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RequestDecoder;
@@ -132,8 +135,7 @@ public class LambdaRequestService {
 		return obj;
 	}
 	
-	
-	public LambdaResponse processRequest(EndpointTreeNode rootNode, LambdaRequest request, Context context) throws Exception {
+	public RequestProcessor getProcessor(EndpointTreeNode rootNode, LambdaRequest request) throws NoMatchingEndpointException, EndpointVariableMismatchException, InvalidEndpointPathException {
 		String proxy = "/";
 		
 		if(request.getPathParameters().has("proxy")) {
@@ -145,13 +147,7 @@ public class LambdaRequestService {
 			}
 		}
 		
-		RequestProcessor rp = rootNode.search(proxy, RequestMethod.getMethod(request.getMethod()));
-		
-		JSONObject pathParameters = request.getPathParameters();
-		for(Entry<String, String> entry : rp.getVariables().entrySet()) {
-			pathParameters.put(entry.getKey(), entry.getValue());
-		}
-		
-		return (LambdaResponse)rp.getCallback().call(context,  request);
+		return rootNode.search(proxy, RequestMethod.getMethod(request.getMethod()));
 	}
+	
 }

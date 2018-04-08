@@ -8,10 +8,13 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.Map.Entry;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
+import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
+import com.compellingcode.cloud.lambda.mvc.endpoint.RequestMethod;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
 import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException;
 import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
@@ -58,24 +61,28 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		} catch(InvalidContentTypeException ex) {
 			logger.fatal(ex.getMessage());
 			try {
-				renderStream(outputStream, new DefaultErrorResponse(501));
+				renderStream(outputStream, errorHandler(501));
 			} catch (LambdaResponseException e) {
 				logger.fatal(getStackTrace(ex));
 			}
 		} catch(NoMatchingEndpointException ex) {
 			try {
-				renderStream(outputStream, new DefaultErrorResponse(404));
+				renderStream(outputStream, errorHandler(404));
 			} catch(LambdaResponseException e) {
 				logger.fatal(getStackTrace(e));
 			}
 		} catch(Exception ex) {
 			logger.fatal(getStackTrace(ex));
 			try {
-				renderStream(outputStream, new DefaultErrorResponse(500));
+				renderStream(outputStream, errorHandler(500));
 			} catch (LambdaResponseException e) {
 				logger.fatal(getStackTrace(ex));
 			}
 		}
+	}
+	
+	protected LambdaResponse errorHandler(int errorNumber) {
+		return new DefaultErrorResponse(errorNumber);
 	}
 	
 	public void addController(Object controller) throws Exception {
@@ -127,7 +134,15 @@ public abstract class StreamHandler implements RequestStreamHandler {
     protected LambdaResponse processRequest(JSONObject data, Context context) throws Exception {
 		LambdaRequest request = lambdaRequestService.getLambdaRequest(data);
 		
-		LambdaResponse response = lambdaRequestService.processRequest(rootNode, request, context);
+		RequestProcessor rp = lambdaRequestService.getProcessor(rootNode, request);
+		
+		JSONObject pathParameters = request.getPathParameters();
+		for(Entry<String, String> entry : rp.getVariables().entrySet()) {
+			pathParameters.put(entry.getKey(), entry.getValue());
+		}
+		
+		LambdaResponse response = (LambdaResponse)rp.getCallback().call(context,  request);
+
 		
 		return response;
     }
