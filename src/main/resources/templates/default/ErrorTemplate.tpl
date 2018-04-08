@@ -37,8 +37,7 @@
 			<div style="width: 100%; text-align: center; line-height: 2;">
 				<span class="bold">${errorName}</span> <span class="weak">Error ${errorNumber}</span><br />
 			</div>
-			${errorMessage}<br />
-			Our service team is working on bringing this page back online.
+			${errorMessage}
 		</div>
 	</body>
 </html>

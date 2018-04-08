@@ -11,11 +11,13 @@ import java.util.Map.Entry;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointVariableMismatchException;
+import com.compellingcode.cloud.lambda.mvc.exception.InvalidEndpointPathException;
 import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
 
 public class EndpointTreeNode {
 	
 	private String path = null;
+	private boolean catchall = false;
 	
 	private Map<Integer, EndpointCallback> callbacks;
 	
@@ -31,7 +33,7 @@ public class EndpointTreeNode {
 		callbacks.put(RequestMethod.DELETE, null);
 	}
 	
-	public void parse(String path, EndpointCallback callback, int method) throws EndpointConflictException {
+	public void parse(String path, EndpointCallback callback, int method) throws EndpointConflictException, InvalidEndpointPathException {
 		List<String> parts = splitifyPath(path);
 		parse("/", parts, callback, new ArrayList<String>(), method);
 	}
@@ -66,10 +68,16 @@ public class EndpointTreeNode {
 				path = "";
 			
 			if(variable != null) {
+				boolean catchall = (variable.charAt(variable.length() - 1) == '+');
+				if(catchall)
+					variable = variable.substring(0, variable.length() - 1);
+				
 				variables.add(variable);
 				
 				if(dynamicNode == null)
 					dynamicNode = new EndpointTreeNode();
+				
+				dynamicNode.setCatchall(catchall);
 				
 				dynamicNode.parse(path + "/" + part, parts, callback, variables, method);
 			} else {
@@ -81,7 +89,7 @@ public class EndpointTreeNode {
 		}
 	}
 	
-	public RequestProcessor search(String path, int method) throws NoMatchingEndpointException, EndpointVariableMismatchException {
+	public RequestProcessor search(String path, int method) throws NoMatchingEndpointException, EndpointVariableMismatchException, InvalidEndpointPathException {
 		List<String> parts = splitifyPath(path);
 		return search(parts, new ArrayList<String>(), method);
 	}
@@ -118,17 +126,32 @@ public class EndpointTreeNode {
 	
 	private RequestProcessor getDynamicProcessor(List<String> parts, List<String> values, int method) throws EndpointVariableMismatchException, NoMatchingEndpointException {
 		if(dynamicNode != null) {
-			String part = parts.remove(0);
+			String part;
+			if(dynamicNode.isCatchall()) {
+				part = String.join("/", parts);
+			} else {
+				part = parts.remove(0);
+			}
+			
 			values.add(part);
+			
 			try {
-				return dynamicNode.search(parts, values, method);
+				if(dynamicNode.isCatchall()) {
+					return dynamicNode.search(new ArrayList<String>(), values, method);
+				} else {
+					return dynamicNode.search(parts, values, method);
+				}
 			} catch(EndpointVariableMismatchException ex) {
 				values.remove(values.size() - 1);
-				parts.add(0, part);
+				
+				if(!dynamicNode.catchall)
+					parts.add(0, part);
 				throw ex;
 			} catch(NoMatchingEndpointException ex) {
 				values.remove(values.size() - 1);
-				parts.add(0, part);
+				
+				if(!dynamicNode.catchall)
+					parts.add(0, part);
 				throw ex;
 			}
 		} else {
@@ -166,7 +189,7 @@ public class EndpointTreeNode {
 		return part.substring(1, part.length() - 1).trim();
 	}
 	
-	private List<String> splitifyPath(String path) {
+	private List<String> splitifyPath(String path) throws InvalidEndpointPathException {
 		if(path == null)
 			return new ArrayList<String>();
 		
@@ -204,7 +227,14 @@ public class EndpointTreeNode {
 		if("/".equals(path))
 			return new ArrayList<String>();
 		
-		return new ArrayList<String>(Arrays.asList(path.split("/")));
+		String[] parts = path.split("/");
+		
+		for(int n = 0; n < parts.length - 1; n++) {
+			if(parts[n].charAt(parts[n].length() - 1) == '+')
+				throw new InvalidEndpointPathException("Catchall(+) path parameter detected before end of path");
+		}
+		
+		return new ArrayList<String>(Arrays.asList(parts));
 	}
 	
 	private String deDotify(String path) {
@@ -320,4 +350,14 @@ public class EndpointTreeNode {
 
 		return sw.toString();
 	}
+
+	public boolean isCatchall() {
+		return catchall;
+	}
+
+	public void setCatchall(boolean catchall) {
+		this.catchall = catchall;
+	}
+	
+	
 }
