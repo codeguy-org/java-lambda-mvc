@@ -15,6 +15,8 @@ public class DefaultErrorResponse extends HtmlLambdaResponse {
 		this.errorNumber = errorNumber;
 		this.errorName = error.getErrorName();
 		this.errorMessage = error.getErrorMessage();
+		
+		setStatusCode(Integer.toString(errorNumber));
 	}
 	
 	public DefaultErrorResponse(String template, int errorNumber) {
