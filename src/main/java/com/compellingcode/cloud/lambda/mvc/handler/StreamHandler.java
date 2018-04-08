@@ -8,18 +8,23 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.compellingcode.cloud.lambda.mvc.domain.LambdaRequest;
 import com.compellingcode.cloud.lambda.mvc.domain.RequestProcessor;
 import com.compellingcode.cloud.lambda.mvc.endpoint.EndpointTreeNode;
-import com.compellingcode.cloud.lambda.mvc.endpoint.RequestMethod;
+import com.compellingcode.cloud.lambda.mvc.exception.EndProcessingException;
 import com.compellingcode.cloud.lambda.mvc.exception.EndpointConflictException;
+import com.compellingcode.cloud.lambda.mvc.exception.ExitFilterChainException;
+import com.compellingcode.cloud.lambda.mvc.exception.FilterException;
 import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException;
 import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
 import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
-import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
+import com.compellingcode.cloud.lambda.mvc.filter.RequestFilter;
+import com.compellingcode.cloud.lambda.mvc.filter.ResponseFilter;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.DefaultErrorResponse;
@@ -38,6 +43,9 @@ public abstract class StreamHandler implements RequestStreamHandler {
     private LambdaRequestService lambdaRequestService = new LambdaRequestService();
     private LambdaControllerService lambdaControllerService = new LambdaControllerService();
     private EndpointTreeNode rootNode = new EndpointTreeNode();
+    
+    private List<RequestFilter> requestFilters = new ArrayList<RequestFilter>();
+    private List<ResponseFilter> responseFilters = new ArrayList<ResponseFilter>();
     
     public StreamHandler() {
     	try {
@@ -71,6 +79,12 @@ public abstract class StreamHandler implements RequestStreamHandler {
 			} catch(LambdaResponseException e) {
 				logger.fatal(getStackTrace(e));
 			}
+		} catch(EndProcessingException ex) {
+			try {
+				renderStream(outputStream, ex.getResponse());
+			} catch (LambdaResponseException e) {
+				logger.fatal(getStackTrace(e));
+			}
 		} catch(Exception ex) {
 			logger.fatal(getStackTrace(ex));
 			try {
@@ -95,6 +109,14 @@ public abstract class StreamHandler implements RequestStreamHandler {
 	
 	public void addMethod(String path, Object controller, Method method, int requestMethod) throws Exception {
 		lambdaControllerService.addMethod(rootNode, path, controller, method, requestMethod);
+	}
+	
+	public void addRequestFilter(RequestFilter filter) {
+		requestFilters.add(filter);
+	}
+	
+	public void addResponseFilter(ResponseFilter filter) {
+		responseFilters.add(filter);
 	}
     
     protected JSONObject acceptStreamConnection(InputStream inputStream) throws IOException {
@@ -136,15 +158,40 @@ public abstract class StreamHandler implements RequestStreamHandler {
 		
 		RequestProcessor rp = lambdaRequestService.getProcessor(rootNode, request);
 		
+		applyRequestFilters(request, context, rp.getCallback().getMethod());
+		
 		JSONObject pathParameters = request.getPathParameters();
 		for(Entry<String, String> entry : rp.getVariables().entrySet()) {
 			pathParameters.put(entry.getKey(), entry.getValue());
 		}
 		
 		LambdaResponse response = (LambdaResponse)rp.getCallback().call(context,  request);
-
+		
+		applyResponseFilters(request, response, context, rp.getCallback().getMethod());
 		
 		return response;
+    }
+    
+    private void applyRequestFilters(LambdaRequest request, Context context, Method m) throws EndProcessingException, FilterException {
+    	try {
+    		for(RequestFilter filter : requestFilters) {
+    			filter.processFilter(request, context, m);
+    		}
+    	} catch(ExitFilterChainException ex) {
+    		// done processing
+    	}
+    }
+    
+    private LambdaResponse applyResponseFilters(LambdaRequest request, LambdaResponse response, Context context, Method m) throws EndProcessingException, FilterException {
+    	try {
+    		for(ResponseFilter filter : responseFilters) {
+    			response = filter.processFilter(request, response, context, m);
+    		}
+    	} catch(ExitFilterChainException ex) {
+    		// done processing
+    	}
+    	
+    	return response;
     }
 
     private String getStackTrace(Throwable t) throws IOException {
