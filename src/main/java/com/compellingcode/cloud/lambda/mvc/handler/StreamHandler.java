@@ -156,6 +156,8 @@ public abstract class StreamHandler implements RequestStreamHandler {
     protected LambdaResponse processRequest(JSONObject data, Context context) throws Exception {
 		LambdaRequest request = lambdaRequestService.getLambdaRequest(data);
 		
+		logger.info(String.format("Incoming request for %s from %s", request.getPath(), request.getIp()));
+		
 		RequestProcessor rp = lambdaRequestService.getProcessor(rootNode, request);
 		
 		applyRequestFilters(request, context, rp.getCallback().getMethod());
