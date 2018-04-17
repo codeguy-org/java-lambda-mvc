@@ -23,11 +23,14 @@ import com.compellingcode.cloud.lambda.mvc.exception.FilterException;
 import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException;
 import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
 import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
+import com.compellingcode.cloud.lambda.mvc.exception.ScheduledEventException;
 import com.compellingcode.cloud.lambda.mvc.filter.RequestFilter;
 import com.compellingcode.cloud.lambda.mvc.filter.ResponseFilter;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.DefaultErrorResponse;
+import com.compellingcode.cloud.lambda.mvc.view.HtmlLambdaResponse;
+import com.compellingcode.cloud.lambda.mvc.view.JSONLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
@@ -66,6 +69,21 @@ public abstract class StreamHandler implements RequestStreamHandler {
 			JSONObject data = acceptStreamConnection(inputStream);
 			LambdaResponse response = processRequest(data, context);
 			renderStream(outputStream, response);
+		} catch(ScheduledEventException ex) {
+			// warm up freemarker
+			try {
+				DefaultErrorResponse htmlWarmup = new DefaultErrorResponse(500);
+				htmlWarmup.getBody();
+			} catch (LambdaResponseException e) {
+				logger.fatal(getStackTrace(e));
+			}
+
+			// warm up jackson
+			try {
+				renderStream(outputStream, new JSONLambdaResponse("pong"));
+			} catch (LambdaResponseException e) {
+				logger.fatal(getStackTrace(ex));
+			}
 		} catch(InvalidContentTypeException ex) {
 			logger.fatal(ex.getMessage());
 			try {

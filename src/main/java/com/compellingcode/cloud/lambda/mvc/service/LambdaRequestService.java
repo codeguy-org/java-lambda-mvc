@@ -17,6 +17,7 @@ import com.compellingcode.cloud.lambda.mvc.exception.InvalidContentTypeException
 import com.compellingcode.cloud.lambda.mvc.exception.InvalidEndpointPathException;
 import com.compellingcode.cloud.lambda.mvc.exception.NoMatchingEndpointException;
 import com.compellingcode.cloud.lambda.mvc.exception.RequestDecoderException;
+import com.compellingcode.cloud.lambda.mvc.exception.ScheduledEventException;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RawRequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.service.requestdecoder.RequestDecoder;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
@@ -26,8 +27,19 @@ public class LambdaRequestService {
 	
 	static final Logger logger = LogManager.getLogger(LambdaRequestService.class);
 	
-	public LambdaRequest getLambdaRequest(JSONObject data) throws InvalidContentTypeException, RequestDecoderException {
+	public LambdaRequest getLambdaRequest(JSONObject data) throws InvalidContentTypeException, RequestDecoderException, ScheduledEventException {
 		LambdaRequest request = new LambdaRequest();
+
+		try {
+			String s = data.getString("detail-type");
+			if("Scheduled Event".equals(s)) {
+				throw new ScheduledEventException();
+			}
+		} catch(ScheduledEventException ex) {
+			throw ex;
+		} catch(Exception ex) {
+			// not found, continue as usual, nothing to do here
+		}
 		
 		request.setHeaders(getJSONObject(data, "headers"));
 		request.setRequestContext(getJSONObject(data, "requestContext"));
