@@ -32,6 +32,7 @@ import com.compellingcode.cloud.lambda.mvc.view.DefaultErrorResponse;
 import com.compellingcode.cloud.lambda.mvc.view.FreemarkerLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.JSONLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
+import com.compellingcode.cloud.lambda.mvc.view.ThymeleafLambdaResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import org.apache.commons.io.input.BoundedReader;
@@ -70,20 +71,7 @@ public abstract class StreamHandler implements RequestStreamHandler {
 			LambdaResponse response = processRequest(data, context);
 			renderStream(outputStream, response);
 		} catch(ScheduledEventException ex) {
-			// warm up freemarker
-			try {
-				DefaultErrorResponse htmlWarmup = new DefaultErrorResponse(500);
-				htmlWarmup.getBody();
-			} catch (LambdaResponseException e) {
-				logger.fatal(getStackTrace(e));
-			}
-
-			// warm up jackson
-			try {
-				renderStream(outputStream, new JSONLambdaResponse("pong"));
-			} catch (LambdaResponseException e) {
-				logger.fatal(getStackTrace(ex));
-			}
+			warmup(outputStream);
 		} catch(InvalidContentTypeException ex) {
 			logger.fatal(ex.getMessage());
 			try {
@@ -110,6 +98,32 @@ public abstract class StreamHandler implements RequestStreamHandler {
 			} catch (LambdaResponseException e) {
 				logger.fatal(getStackTrace(ex));
 			}
+		}
+	}
+	
+	protected void warmup(OutputStream outputStream) throws IOException {
+		// warm up freemarker
+		try {
+			FreemarkerLambdaResponse freemarker = new FreemarkerLambdaResponse("test");
+			freemarker.getBody();
+		} catch (LambdaResponseException e) {
+			// ok
+		}
+		
+		try {
+			ThymeleafLambdaResponse thymeleaf = new ThymeleafLambdaResponse("test");
+			thymeleaf.getBody();
+		} catch(Exception ex) {
+			// ok
+		}
+
+		// warm up jackson
+		try {
+			renderStream(outputStream, new JSONLambdaResponse("pong"));
+		} catch (LambdaResponseException e) {
+			logger.fatal(getStackTrace(e));
+		} catch (IOException e) {
+			logger.fatal(e);
 		}
 	}
 	
