@@ -104,14 +104,14 @@ public abstract class StreamHandler implements RequestStreamHandler {
 	protected void warmup(OutputStream outputStream) throws IOException {
 		// warm up freemarker
 		try {
-			FreemarkerLambdaResponse freemarker = new FreemarkerLambdaResponse("empty");
+			FreemarkerLambdaResponse freemarker = new FreemarkerLambdaResponse("default/empty");
 			freemarker.getBody();
 		} catch (LambdaResponseException e) {
 			// ok
 		}
 		
 		try {
-			ThymeleafLambdaResponse thymeleaf = new ThymeleafLambdaResponse("empty");
+			ThymeleafLambdaResponse thymeleaf = new ThymeleafLambdaResponse("default/empty");
 			thymeleaf.getBody();
 		} catch(Exception ex) {
 			// ok
