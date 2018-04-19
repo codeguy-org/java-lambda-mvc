@@ -34,6 +34,20 @@
 		<version>0.0.1</version>
 	</dependency>
     
+	<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf -->
+	<dependency>
+	    <groupId>org.thymeleaf</groupId>
+	    <artifactId>thymeleaf</artifactId>
+	    <version>3.0.9.RELEASE</version>
+	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/nz.net.ultraq.thymeleaf/thymeleaf-layout-dialect -->
+	<dependency>
+	    <groupId>nz.net.ultraq.thymeleaf</groupId>
+	    <artifactId>thymeleaf-layout-dialect</artifactId>
+	    <version>2.3.0</version>
+	</dependency>
+    
 	<!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
 	<dependency>
 	    <groupId>org.mockito</groupId>

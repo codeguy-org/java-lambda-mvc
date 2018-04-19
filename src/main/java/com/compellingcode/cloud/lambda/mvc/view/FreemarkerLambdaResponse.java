@@ -12,8 +12,8 @@ import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 
-public class HtmlLambdaResponse extends LambdaResponse {
-	static final Logger logger = LogManager.getLogger(HtmlLambdaResponse.class);
+public class FreemarkerLambdaResponse extends LambdaResponse {
+	static final Logger logger = LogManager.getLogger(FreemarkerLambdaResponse.class);
 			
 	private static Configuration freemarkerConfiguration = null;
 	
@@ -23,13 +23,13 @@ public class HtmlLambdaResponse extends LambdaResponse {
 		if(freemarkerConfiguration == null) {
 			freemarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
 			freemarkerConfiguration.setDefaultEncoding("UTF-8");
-			freemarkerConfiguration.setClassForTemplateLoading(HtmlLambdaResponse.class, "/templates");
+			freemarkerConfiguration.setClassForTemplateLoading(FreemarkerLambdaResponse.class, "/templates");
 		}
 		
 		return freemarkerConfiguration;
 	}
 	
-	public HtmlLambdaResponse(String template) {
+	public FreemarkerLambdaResponse(String template) {
 		this.template = template;
 		this.setMimeType(MimeType.HTML);
 	}

@@ -3,7 +3,7 @@ package com.compellingcode.cloud.lambda.mvc.view;
 import com.compellingcode.cloud.lambda.mvc.enums.HtmlError;
 import com.compellingcode.cloud.lambda.mvc.exception.LambdaResponseException;
 
-public class DefaultErrorResponse extends HtmlLambdaResponse {
+public class DefaultErrorResponse extends FreemarkerLambdaResponse {
 	private int errorNumber;
 	private String errorName;
 	private String errorMessage;

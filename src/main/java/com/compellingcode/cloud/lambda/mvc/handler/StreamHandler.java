@@ -29,7 +29,7 @@ import com.compellingcode.cloud.lambda.mvc.filter.ResponseFilter;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.DefaultErrorResponse;
-import com.compellingcode.cloud.lambda.mvc.view.HtmlLambdaResponse;
+import com.compellingcode.cloud.lambda.mvc.view.FreemarkerLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.JSONLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.amazonaws.services.lambda.runtime.Context;
