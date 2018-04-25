@@ -29,7 +29,6 @@ import com.compellingcode.cloud.lambda.mvc.filter.ResponseFilter;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaControllerService;
 import com.compellingcode.cloud.lambda.mvc.service.LambdaRequestService;
 import com.compellingcode.cloud.lambda.mvc.view.DefaultErrorResponse;
-import com.compellingcode.cloud.lambda.mvc.view.FreemarkerLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.JSONLambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.LambdaResponse;
 import com.compellingcode.cloud.lambda.mvc.view.ThymeleafLambdaResponse;
@@ -102,14 +101,6 @@ public abstract class StreamHandler implements RequestStreamHandler {
 	}
 	
 	protected void warmup(OutputStream outputStream) throws IOException {
-		// warm up freemarker
-		try {
-			FreemarkerLambdaResponse freemarker = new FreemarkerLambdaResponse("default/empty");
-			freemarker.getBody();
-		} catch (LambdaResponseException e) {
-			// ok
-		}
-		
 		try {
 			ThymeleafLambdaResponse thymeleaf = new ThymeleafLambdaResponse("default/empty");
 			thymeleaf.getBody();

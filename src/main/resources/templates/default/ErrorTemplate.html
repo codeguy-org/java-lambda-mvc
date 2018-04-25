@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>Error - ${errorName}</title>
+		<title th:text="'Error - ' + ${errorName}">Error</title>
 		<style>
 			.center-div
 			{
@@ -35,9 +35,9 @@
 	<body style="width: 100%; height: 100%;">
 		<div class="center-div" style="text-align: center; width: 100%; line-height: 1.5;">
 			<div style="width: 100%; text-align: center; line-height: 2;">
-				<span class="bold">${errorName}</span> <span class="weak">Error ${errorNumber}</span><br />
+				<span class="bold" th:text="${errorName}">Error</span> <span class="weak">Error <span th:text="${errorNumber}">500</span></span><br />
 			</div>
-			${errorMessage}
+			<span th:text="${errorMessage}">An unknown error occurred.</span>
 		</div>
 	</body>
 </html>
